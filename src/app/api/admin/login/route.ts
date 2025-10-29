@@ -54,9 +54,9 @@ export async function POST(req: Request) {
       { success: true, message: "Login successful", token },
       { status: 200 }
     );
-  } catch (err: any) {
+  } catch (err) {
     return NextResponse.json(
-      { success: false, message: "Bad request", error: err?.message },
+      { success: false, message: "Bad request", error: err instanceof Error ? err.message : 'Unknown error' },
       { status: 400 }
     );
   }

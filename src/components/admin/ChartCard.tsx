@@ -5,11 +5,10 @@ import { motion } from "framer-motion";
 
 interface ChartCardProps {
   data: number[];
-  gradient?: string;
   title?: string;
 }
 
-export const ChartCard: React.FC<ChartCardProps> = ({ data, gradient, title }) => {
+export const ChartCard: React.FC<ChartCardProps> = ({ data, title }) => {
   const max = Math.max(...data, 1);
   const width = 300;
   const height = 120;

@@ -13,7 +13,9 @@ export interface HeaderProps {
 const PRIMARY = "#FC7000";
 const GRADIENT = "linear-gradient(90deg, #F7931E, #FF6B35)";
 
-const headerVariants: any = {
+import { Variants } from "framer-motion";
+
+const headerVariants: Variants = {
   hidden: { opacity: 0, y: -6 },
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
 };
@@ -49,7 +51,7 @@ export const Header: React.FC<HeaderProps> = ({ showAdminLinks = false }) => {
       try {
         localStorage.removeItem("mico_token");
       } catch (err) {
-        // ignore
+        console.warn('Failed to remove token from localStorage:', err);
       }
       setOpen(false);
       router.push("/");
@@ -88,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({ showAdminLinks = false }) => {
                 className={`relative text-sm py-1 px-0 hover:opacity-90 transition-all ${
                   isActive(l.href) ? "font-semibold text-slate-900" : "text-slate-700"
                 }`}
-                onClick={(e) => handleLinkClick(e as any, l.href)}
+                onClick={(e) => handleLinkClick(e, l.href)}
               >
                 {l.label}
                 {isActive(l.href) && (
@@ -148,7 +150,7 @@ export const Header: React.FC<HeaderProps> = ({ showAdminLinks = false }) => {
                   className={`block rounded-md px-3 py-2 text-sm ${
                     isActive(l.href) ? "font-semibold text-slate-900" : "text-slate-700"
                   }`}
-                  onClick={(e) => handleLinkClick(e as any, l.href)}
+                  onClick={(e) => handleLinkClick(e, l.href)}
                 >
                   {l.label}
                 </Link>

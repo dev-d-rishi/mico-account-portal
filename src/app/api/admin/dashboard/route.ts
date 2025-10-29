@@ -2,28 +2,50 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
+import { getApps, initializeApp, cert } from "firebase-admin/app";
+import { getFirestore, Timestamp } from "firebase-admin/firestore";
+
+interface DashboardKPI {
+  title: string;
+  value: number | string;
+  delta: string;
+}
+
+interface Booking {
+  id: string;
+  amount: number;
+  createdAt: Timestamp;
+}
+
+interface Job {
+  id: string;
+  title: string;
+  status: string;
+  assignee?: string;
+}
+
+interface Feedback {
+  id: string;
+  user: string;
+  text: string;
+  date: string;
+}
+
 // Try to load Firebase Admin if available; otherwise fall back to static sample data.
 async function fetchFromFirebase() {
   try {
-    // Lazy import so the route still works when firebase-admin isn't installed
-    // To enable Firebase: set FIREBASE_SERVICE_ACCOUNT (JSON) or use ADC.
-    // Install with: yarn add firebase-admin
-    // See README notes below.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const admin = require("firebase-admin");
-
-    if (!admin.apps.length) {
+    if (!getApps().length) {
       const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT || "";
       if (serviceAccountJson) {
         const cred = JSON.parse(serviceAccountJson);
-        admin.initializeApp({ credential: admin.credential.cert(cred) });
+        initializeApp({ credential: cert(cred) });
       } else {
         // Try application default credentials
-        admin.initializeApp();
+        initializeApp();
       }
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
 
     // Example collection names - adapt to your schema
     const kpisSnap = await db.collection("dashboard_kpis").get();
@@ -31,26 +53,27 @@ async function fetchFromFirebase() {
     const jobsSnap = await db.collection("jobs").get();
     const feedbackSnap = await db.collection("feedback").orderBy("createdAt", "desc").limit(5).get();
 
-    const kpis = kpisSnap.docs.map((d: any) => d.data());
-    const bookings = bookingsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
-    const jobs = jobsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
-    const feedback = feedbackSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
+    const kpis = kpisSnap.docs.map(d => d.data() as DashboardKPI);
+    const bookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() }) as Booking);
+    const jobs = jobsSnap.docs.map(d => ({ id: d.id, ...d.data() }) as Job);
+    const feedback = feedbackSnap.docs.map(d => ({ id: d.id, ...d.data() }) as Feedback);
 
     return {
       kpis,
-      chart: bookings.map((b: any) => b.amount || 0).slice(0, 7),
+      chart: bookings.map(b => b.amount || 0).slice(0, 7),
       feedback,
-      todayBookings: bookings.filter((b: any) => {
-        const d = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+      todayBookings: bookings.filter(b => {
+        const d = b.createdAt?.toDate();
+        if (!d) return false;
         const now = new Date();
         return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
       }).length,
-      pendingJobs: jobs.filter((j: any) => j.status === "pending"),
-      completedJobs: jobs.filter((j: any) => j.status === "completed"),
+      pendingJobs: jobs.filter(j => j.status === "pending"),
+      completedJobs: jobs.filter(j => j.status === "completed"),
     };
   } catch (err) {
     // If firebase-admin isn't present or there's an error, return null to let fallback run
-    // console.error('firebase fetch failed', err);
+    console.error('Firebase fetch failed:', err);
     return null;
   }
 }

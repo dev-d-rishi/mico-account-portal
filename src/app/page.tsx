@@ -2,7 +2,7 @@
 // ...existing code...
 import React from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 const GRADIENT = "linear-gradient(90deg, #F7931E, #FF6B35)";
 const PRIMARY = "#FC7000";
@@ -11,7 +11,7 @@ const container = {
   hidden: { opacity: 0, y: 16 },
   show: { opacity: 1, y: 0, transition: { staggerChildren: 0.08 } },
 };
-const fadeUp: any = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 10 },
   show: {
     opacity: 1,

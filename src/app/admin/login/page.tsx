@@ -7,7 +7,9 @@ import { motion } from "framer-motion";
 const PRIMARY = "#FC7000";
 const GRADIENT = "linear-gradient(90deg, #F7931E, #FF6B35)";
 
-const cardVariants: any = {
+import { Variants } from "framer-motion";
+
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 18 },
   show: {
     opacity: 1,
@@ -35,6 +37,7 @@ export default function AdminLoginPage() {
       const json = atob(padded);
       return JSON.parse(json);
     } catch (err) {
+      console.warn('Failed to parse JWT:', err);
       return null;
     }
   };
@@ -48,7 +51,11 @@ export default function AdminLoginPage() {
         return;
       }
 
-      const payload: any = parseJwt(token);
+      interface JWTPayload {
+        exp: number;
+        [key: string]: unknown;
+      }
+      const payload = parseJwt(token) as JWTPayload | null;
       if (payload && payload.exp) {
         const expMs = payload.exp * 1000;
         if (expMs > Date.now()) {
@@ -61,7 +68,7 @@ export default function AdminLoginPage() {
       // invalid/expired
       localStorage.removeItem("mico_token");
     } catch (err) {
-      // ignore
+      console.error('Failed to check session:', err);
     } finally {
       setCheckingSession(false);
     }
@@ -98,13 +105,13 @@ export default function AdminLoginPage() {
         try {
           localStorage.setItem("mico_token", data.token);
         } catch (err) {
-          // ignore localStorage errors
+          console.error('Failed to store token:', err);
         }
       }
 
       router.push("/admin/dashboard");
-    } catch (err: any) {
-      setError(err?.message || "Network error");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error");
     } finally {
       setLoading(false);
     }

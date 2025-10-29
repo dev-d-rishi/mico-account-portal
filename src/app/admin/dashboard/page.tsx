@@ -18,15 +18,34 @@ const initialKpiData = [
 
 const initialChartData = [0, 0, 0, 0, 0, 0, 0];
 
-const initialFeedback: any[] = [];
+interface KPI {
+  title: string;
+  value: string | number;
+  delta: string;
+}
+
+interface Job {
+  id: string;
+  title: string;
+  assignee?: string;
+}
+
+interface FeedbackItem {
+  id: string | number;
+  user: string;
+  text: string;
+  date: string;
+}
+
+const initialFeedback: FeedbackItem[] = [];
 
 export default function AdminDashboardPage() {
-  const [kpiData, setKpiData] = useState(initialKpiData);
+  const [kpiData, setKpiData] = useState<KPI[]>(initialKpiData);
   const [chartData, setChartData] = useState<number[]>(initialChartData);
-  const [feedback, setFeedback] = useState<any[]>(initialFeedback);
+  const [feedback, setFeedback] = useState<FeedbackItem[]>(initialFeedback);
   const [todayBookings, setTodayBookings] = useState(0);
-  const [pendingJobs, setPendingJobs] = useState<any[]>([]);
-  const [completedJobs, setCompletedJobs] = useState<any[]>([]);
+  const [pendingJobs, setPendingJobs] = useState<Job[]>([]);
+  const [completedJobs, setCompletedJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,8 +63,7 @@ export default function AdminDashboardPage() {
         if (data.pendingJobs) setPendingJobs(data.pendingJobs);
         if (data.completedJobs) setCompletedJobs(data.completedJobs);
       } catch (err) {
-        // ignore and keep defaults
-        // console.error(err);
+        console.error('Failed to load dashboard data:', err);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -95,7 +113,7 @@ export default function AdminDashboardPage() {
         {/* Main grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <ChartCard data={chartData} title="Revenue" gradient={GRADIENT} />
+            <ChartCard data={chartData} title="Revenue" />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <motion.div
@@ -104,7 +122,7 @@ export default function AdminDashboardPage() {
                 transition={{ duration: 0.35 }}
                 className="rounded-2xl bg-white border border-slate-100 shadow-sm p-6"
               >
-                <div className="text-sm text-slate-500">Today's Bookings</div>
+                <div className="text-sm text-slate-500">Today&apos;s Bookings</div>
                 <div className="text-3xl font-bold text-slate-900 mt-3">{loading ? "—" : todayBookings}</div>
                 <div className="text-sm text-slate-600 mt-2">Compared to 18 yesterday</div>
               </motion.div>
@@ -115,9 +133,11 @@ export default function AdminDashboardPage() {
                   <div className="text-xs text-slate-500">5 total</div>
                 </div>
                 <ul className="space-y-2 text-sm text-slate-700">
-                  <li className="p-2 rounded-md hover:bg-slate-50">Booking #1024 — Plumbing — John</li>
-                  <li className="p-2 rounded-md hover:bg-slate-50">Booking #1023 — AC repair — Rita</li>
-                  <li className="p-2 rounded-md hover:bg-slate-50">Booking #1019 — Electrical — Sam</li>
+                  {pendingJobs.map(job => (
+                    <li key={job.id} className="p-2 rounded-md hover:bg-slate-50">
+                      Booking #{job.id} &mdash; {job.title} {job.assignee && `&mdash; ${job.assignee}`}
+                    </li>
+                  ))}
                 </ul>
               </motion.div>
             </div>
@@ -131,8 +151,11 @@ export default function AdminDashboardPage() {
                   <div className="text-xs text-slate-500">Today</div>
                 </div>
                 <ul className="text-sm text-slate-700 space-y-2">
-                  <li className="p-2 rounded-md hover:bg-slate-50">#1001 — Delivery — Completed</li>
-                  <li className="p-2 rounded-md hover:bg-slate-50">#1000 — Installation — Completed</li>
+                  {completedJobs.map(job => (
+                    <li key={job.id} className="p-2 rounded-md hover:bg-slate-50">
+                      #{job.id} &mdash; {job.title} &mdash; Completed
+                    </li>
+                  ))}
                 </ul>
               </div>
             </motion.div>
