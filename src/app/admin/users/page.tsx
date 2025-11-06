@@ -3,12 +3,22 @@
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebaseClient";
+import { Trash2 } from "lucide-react";
+
+interface Vehicle {
+  id?: string;
+  model?: string;
+  type?: string;
+  registration?: string;
+}
 
 interface User {
   id: string;
   name?: string;
   email?: string;
-  [key: string]: any;
+  phone?: string;
+  vehicles?: Vehicle[];
+  [key: string]: string | number | boolean | string[] | number[] | Vehicle[] | undefined;
 }
 
 export default function UsersPage() {
@@ -91,14 +101,19 @@ export default function UsersPage() {
                     {user.phone || "—"}
                   </td>
                   <td className="px-6 py-4 text-gray-900 whitespace-nowrap">
-                    {user?.vehicles?.length || "NA"}
+                    {Array.isArray(user.vehicles) ? user.vehicles.length : "NA"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
                       onClick={() => handleDelete(user.id)}
                       disabled={deleting === user.id}
-                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+                      className="flex items-center gap-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
                     >
+                      {deleting === user.id ? (
+                        <Trash2 size={16} className="animate-pulse" />
+                      ) : (
+                        <Trash2 size={16} />
+                      )}
                       {deleting === user.id ? "Deleting..." : "Delete"}
                     </button>
                   </td>

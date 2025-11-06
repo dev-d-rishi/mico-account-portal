@@ -17,7 +17,11 @@ import { Variants } from "framer-motion";
 
 const headerVariants: Variants = {
   hidden: { opacity: 0, y: -6 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+  },
 };
 
 export const Header: React.FC<HeaderProps> = ({ showAdminLinks = false }) => {
@@ -32,7 +36,7 @@ export const Header: React.FC<HeaderProps> = ({ showAdminLinks = false }) => {
   ];
 
   const adminLinks = [
-    { label: "Dashboard", href: "/admin/dashboard" },
+    // { label: "Dashboard", href: "/admin/dashboard" },
     // { label: "Manage Services", href: "/admin/services" },
     { label: "Logout", href: "/logout" },
   ];
@@ -51,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({ showAdminLinks = false }) => {
       try {
         localStorage.removeItem("mico_token");
       } catch (err) {
-        console.warn('Failed to remove token from localStorage:', err);
+        console.warn("Failed to remove token from localStorage:", err);
       }
       setOpen(false);
       router.push("/");
@@ -68,10 +72,17 @@ export const Header: React.FC<HeaderProps> = ({ showAdminLinks = false }) => {
       animate="show"
       className="sticky top-0 z-50 bg-white shadow-sm"
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      <div
+        className={`${
+          showAdminLinks ? "w-full px-6" : "max-w-6xl mx-auto px-4 sm:px-6"
+        }`}
+      >
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-4">
-            <Link href={showAdminLinks ? "/admin/dashboard" : "/"} className="inline-flex items-center">
+            <Link
+              href={showAdminLinks ? "/admin/dashboard" : "/"}
+              className="inline-flex items-center"
+            >
               <span
                 className="text-lg font-semibold"
                 style={{ color: PRIMARY }}
@@ -88,7 +99,9 @@ export const Header: React.FC<HeaderProps> = ({ showAdminLinks = false }) => {
                 key={l.href}
                 href={l.href}
                 className={`relative text-sm py-1 px-0 hover:opacity-90 transition-all ${
-                  isActive(l.href) ? "font-semibold text-slate-900" : "text-slate-700"
+                  isActive(l.href)
+                    ? "font-semibold text-slate-900"
+                    : "text-slate-700"
                 }`}
                 onClick={(e) => handleLinkClick(e, l.href)}
               >
@@ -123,9 +136,17 @@ export const Header: React.FC<HeaderProps> = ({ showAdminLinks = false }) => {
                 xmlns="http://www.w3.org/2000/svg"
               >
                 {open ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 )}
               </svg>
             </button>
@@ -148,7 +169,9 @@ export const Header: React.FC<HeaderProps> = ({ showAdminLinks = false }) => {
                   key={l.href}
                   href={l.href}
                   className={`block rounded-md px-3 py-2 text-sm ${
-                    isActive(l.href) ? "font-semibold text-slate-900" : "text-slate-700"
+                    isActive(l.href)
+                      ? "font-semibold text-slate-900"
+                      : "text-slate-700"
                   }`}
                   onClick={(e) => handleLinkClick(e, l.href)}
                 >

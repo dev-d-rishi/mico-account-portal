@@ -3,27 +3,43 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  LayoutDashboard,
+  CalendarCheck,
+  Users,
+  Wrench,
+  Settings,
+  DollarSign,
+  MessageSquare,
+  Gift,
+  FileText,
+  LogOut,
+} from "lucide-react";
 
 const sections = [
   {
     title: "Main Sections",
     items: [
-      { label: "Dashboard", href: "/admin/dashboard" },
-      { label: "Bookings", href: "/admin/bookings" },
-      { label: "Customers", href: "/admin/users" },
-      { label: "Servicemen", href: "/admin/servicemen" },
-      { label: "Services", href: "/admin/services" },
-      { label: "Revenue", href: "/admin/revenue" },
-      { label: "Feedback", href: "/admin/feedback" },
+      { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+      { label: "Bookings", href: "/admin/bookings", icon: CalendarCheck },
+      { label: "Customers", href: "/admin/users", icon: Users },
+      { label: "Workers", href: "/admin/workers", icon: Wrench },
+      { label: "Services", href: "/admin/services", icon: Settings },
+      { label: "Revenue", href: "/admin/revenue", icon: DollarSign },
+      { label: "Feedback", href: "/admin/feedback", icon: MessageSquare },
     ],
   },
   {
     title: "Management & Settings",
     items: [
-      { label: "Promotions / Discounts", href: "/admin/promotions" },
-      { label: "Survey Responses", href: "/admin/surveys" },
-      { label: "Settings", href: "/admin/settings" },
-      { label: "Logout", href: "/logout", isLogout: true },
+      {
+        label: "Promotions / Discounts",
+        href: "/admin/promotions",
+        icon: Gift,
+      },
+      { label: "Survey Responses", href: "/admin/surveys", icon: FileText },
+      { label: "Settings", href: "/admin/settings", icon: Settings },
+      { label: "Logout", href: "/logout", isLogout: true, icon: LogOut },
     ],
   },
 ];
@@ -48,16 +64,24 @@ export default function Sidebar() {
   };
 
   return (
-    <nav aria-label="Admin sidebar" className="w-64 hidden lg:block">
-      <div className="h-full sticky top-16 p-4 space-y-8 bg-white border-r border-slate-100">
+    <nav
+      aria-label="Admin sidebar"
+      className="group transition-all duration-300 bg-white border-r border-slate-100
+            md:w-20 md:hover:w-64 lg:block"
+    >
+      <div className="h-full sticky top-16 p-3 space-y-6 overflow-x-visible overflow-y-auto">
         {sections.map((section) => (
           <div key={section.title}>
-            <div className="text-xs uppercase tracking-wider text-slate-500 mb-2 font-semibold">
+            {/* Hide section titles in collapsed view */}
+            <div className="text-xs uppercase tracking-wider text-slate-500 mb-2 font-semibold hidden md:group-hover:block">
               {section.title}
             </div>
             <ul className="space-y-1">
               {section.items.map((item) => {
                 const active = isActive(item.href);
+                const Icon = item.icon;
+                const baseClasses =
+                  "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all";
 
                 if (item.isLogout) {
                   return (
@@ -65,9 +89,12 @@ export default function Sidebar() {
                       <a
                         href="#logout"
                         onClick={handleLogout}
-                        className="block px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                        className={`${baseClasses} text-red-600 hover:bg-red-50 focus:ring-2 focus:ring-orange-300`}
                       >
-                        {item.label}
+                        <Icon size={18} />
+                        <span className="hidden md:group-hover:inline">
+                          {item.label}
+                        </span>
                       </a>
                     </li>
                   );
@@ -77,14 +104,17 @@ export default function Sidebar() {
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      className={`block px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                      className={`${baseClasses} ${
                         active
                           ? "bg-orange-50 text-orange-600 font-semibold"
                           : "text-slate-700 hover:bg-slate-50"
                       }`}
                       aria-current={active ? "page" : undefined}
                     >
-                      {item.label}
+                      <Icon size={18} />
+                      <span className="hidden md:group-hover:inline">
+                        {item.label}
+                      </span>
                     </Link>
                   </li>
                 );
