@@ -18,7 +18,14 @@ interface User {
   email?: string;
   phone?: string;
   vehicles?: Vehicle[];
-  [key: string]: string | number | boolean | string[] | number[] | Vehicle[] | undefined;
+  [key: string]:
+    | string
+    | number
+    | boolean
+    | string[]
+    | number[]
+    | Vehicle[]
+    | undefined;
 }
 
 export default function UsersPage() {
@@ -64,13 +71,19 @@ export default function UsersPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="animate-spin h-6 w-6 border-t-2 border-gray-400 rounded-full"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-6 bg-gray-50 text-black">
       <h1 className="text-2xl font-bold mb-4">Users</h1>
 
-      {loading ? (
-        <p>Loading users...</p>
-      ) : users.length === 0 ? (
+      {users.length === 0 ? (
         <p>No users found.</p>
       ) : (
         <div className="overflow-x-auto bg-white shadow rounded-lg">

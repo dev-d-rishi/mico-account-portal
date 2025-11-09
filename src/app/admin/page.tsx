@@ -23,14 +23,10 @@ ChartJS.register(
   Legend
 );
 
-interface ChartDataPointUsers {
+interface ChartDataPoint {
   date: string;
-  users: number;
-}
-
-interface ChartDataPointDuration {
-  date: string;
-  duration: number;
+  users?: number;
+  duration?: number;
 }
 
 interface LatestRelease {
@@ -39,33 +35,27 @@ interface LatestRelease {
 }
 
 interface DashboardData {
-  activeUsers: number;
-  newUsers: number;
-  avgEngagementDuration: number;
-  screenPageViews: number;
-  totalUsers: number;
-  userActivityOverTime: ChartDataPointUsers[];
-  engagementDurationOverTime: ChartDataPointDuration[];
+  activeUsers?: number;
+  newUsers?: number;
+  avgEngagementDuration?: number;
+  screenPageViews?: number;
+  totalUsers?: number;
   latestRelease?: LatestRelease;
+  userActivityOverTime: ChartDataPoint[];
+  engagementDurationOverTime: ChartDataPoint[];
 }
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData>({
-    activeUsers: 0,
-    newUsers: 0,
-    avgEngagementDuration: 0,
-    screenPageViews: 0,
-    totalUsers: 0,
     userActivityOverTime: [],
     engagementDurationOverTime: [],
-    latestRelease: undefined,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       const res = await fetch("/api/admin/stats");
-      const result: DashboardData = await res.json();
+      const result = await res.json();
       setData(result);
       setLoading(false);
     }
@@ -76,11 +66,11 @@ export default function DashboardPage() {
     return <div className="p-6 text-gray-600">Loading dashboard...</div>;
 
   const userActivityChartData = {
-    labels: (data?.userActivityOverTime ?? []).map((d: ChartDataPointUsers) => d.date),
+    labels: (data?.userActivityOverTime ?? []).map((d: ChartDataPoint) => d.date),
     datasets: [
       {
         label: "Active Users",
-        data: (data?.userActivityOverTime ?? []).map((d: ChartDataPointUsers) => d.users),
+        data: (data?.userActivityOverTime ?? []).map((d: ChartDataPoint) => d.users ?? 0),
         borderColor: "#FC7000",
         backgroundColor: "rgba(252,112,0,0.2)",
         fill: true,
@@ -90,11 +80,11 @@ export default function DashboardPage() {
   };
 
   const engagementDurationChartData = {
-    labels: (data?.engagementDurationOverTime ?? []).map((d: ChartDataPointDuration) => d.date),
+    labels: (data?.engagementDurationOverTime ?? []).map((d: ChartDataPoint) => d.date),
     datasets: [
       {
         label: "Avg Engagement Duration (mins)",
-        data: (data?.engagementDurationOverTime ?? []).map((d: ChartDataPointDuration) => d.duration),
+        data: (data?.engagementDurationOverTime ?? []).map((d: ChartDataPoint) => d.duration ?? 0),
         borderColor: "#3B82F6",
         backgroundColor: "rgba(59,130,246,0.2)",
         fill: true,

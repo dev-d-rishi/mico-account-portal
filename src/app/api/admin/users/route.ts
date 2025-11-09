@@ -8,7 +8,7 @@ export async function GET() {
     const snapshot = await getDocs(usersCol);
     const users = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     return NextResponse.json({ users });
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch users" },
       { status: 500 }

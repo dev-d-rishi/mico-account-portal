@@ -8,10 +8,8 @@ import {
   CalendarCheck,
   Users,
   Wrench,
-  Settings,
   DollarSign,
   MessageSquare,
-  Gift,
   FileText,
   LogOut,
 } from "lucide-react";
@@ -24,7 +22,7 @@ const sections = [
       { label: "Bookings", href: "/admin/bookings", icon: CalendarCheck },
       { label: "Customers", href: "/admin/users", icon: Users },
       { label: "Workers", href: "/admin/workers", icon: Wrench },
-      { label: "Services", href: "/admin/services", icon: Settings },
+      // { label: "Services", href: "/admin/services", icon: Settings },
       { label: "Revenue", href: "/admin/revenue", icon: DollarSign },
       { label: "Feedback", href: "/admin/feedback", icon: MessageSquare },
     ],
@@ -32,13 +30,13 @@ const sections = [
   {
     title: "Management & Settings",
     items: [
-      {
-        label: "Promotions / Discounts",
-        href: "/admin/promotions",
-        icon: Gift,
-      },
+      // {
+      //   label: "Promotions / Discounts",
+      //   href: "/admin/promotions",
+      //   icon: Gift,
+      // },
       { label: "Survey Responses", href: "/admin/surveys", icon: FileText },
-      { label: "Settings", href: "/admin/settings", icon: Settings },
+      // { label: "Settings", href: "/admin/settings", icon: Settings },
       { label: "Logout", href: "/logout", isLogout: true, icon: LogOut },
     ],
   },

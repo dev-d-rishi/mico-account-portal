@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
       const json = atob(padded);
       return JSON.parse(json);
     } catch (err) {
-      console.warn('Failed to parse JWT:', err);
+      console.warn("Failed to parse JWT:", err);
       return null;
     }
   };
@@ -68,7 +68,7 @@ export default function AdminLoginPage() {
       // invalid/expired
       localStorage.removeItem("mico_token");
     } catch (err) {
-      console.error('Failed to check session:', err);
+      console.error("Failed to check session:", err);
     } finally {
       setCheckingSession(false);
     }
@@ -104,8 +104,9 @@ export default function AdminLoginPage() {
       if (data?.token) {
         try {
           localStorage.setItem("mico_token", data.token);
+          window.dispatchEvent(new Event("mico_token_changed"));
         } catch (err) {
-          console.error('Failed to store token:', err);
+          console.error("Failed to store token:", err);
         }
       }
 
