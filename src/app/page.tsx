@@ -65,7 +65,7 @@ export default function Home() {
             style={{ boxShadow: "0 8px 30px rgba(15,23,42,0.06)" }}
           >
             <Image
-              src="/car-wash-hero.jpg"
+              src={"https://mico-images-directory.s3.eu-north-1.amazonaws.com/services/wash2.png"}
               alt="Car being washed"
               width={800}
               height={500}
