@@ -76,11 +76,17 @@ export default function DashboardPage() {
     return <div className="p-6 text-gray-600">Loading dashboard...</div>;
 
   const userActivityChartData = {
-    labels: (data?.userActivityOverTime ?? []).map((d: ChartDataPointUsers) => d.date),
+    labels: (data?.userActivityOverTime ?? []).map((d: ChartDataPointUsers) =>
+      d.date.length === 8
+        ? `${d.date.slice(6, 8)}/${d.date.slice(4, 6)}/${d.date.slice(0, 4)}`
+        : d.date
+    ),
     datasets: [
       {
         label: "Active Users",
-        data: (data?.userActivityOverTime ?? []).map((d: ChartDataPointUsers) => d.users),
+        data: (data?.userActivityOverTime ?? []).map(
+          (d: ChartDataPointUsers) => d.users
+        ),
         borderColor: "#FC7000",
         backgroundColor: "rgba(252,112,0,0.2)",
         fill: true,
@@ -90,11 +96,17 @@ export default function DashboardPage() {
   };
 
   const engagementDurationChartData = {
-    labels: (data?.engagementDurationOverTime ?? []).map((d: ChartDataPointDuration) => d.date),
+    labels: (data?.engagementDurationOverTime ?? []).map((d) =>
+      d.date.length === 8
+        ? `${d.date.slice(6, 8)}/${d.date.slice(4, 6)}/${d.date.slice(0, 4)}`
+        : d.date
+    ),
     datasets: [
       {
         label: "Avg Engagement Duration (mins)",
-        data: (data?.engagementDurationOverTime ?? []).map((d: ChartDataPointDuration) => d.duration),
+        data: (data?.engagementDurationOverTime ?? []).map(
+          (d: ChartDataPointDuration) => d.duration
+        ),
         borderColor: "#3B82F6",
         backgroundColor: "rgba(59,130,246,0.2)",
         fill: true,
@@ -177,7 +189,14 @@ export default function DashboardPage() {
         </p>
         <p className="text-xs text-gray-500">
           {data?.latestRelease?.createdAt
-            ? new Date(data.latestRelease.createdAt).toLocaleDateString()
+            ? new Date(data.latestRelease.createdAt).toLocaleString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              })
             : ""}
         </p>
       </div>

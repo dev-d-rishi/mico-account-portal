@@ -84,7 +84,14 @@ export default function FeedbackPage() {
                     {f.comment || "-"}
                   </td>
                   <td className="px-4 py-3 text-slate-600">
-                    {new Date(f.updatedAt).toLocaleString()}
+                    {new Date(f.updatedAt).toLocaleString("en-GB", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
                   </td>
                 </tr>
               ))}
