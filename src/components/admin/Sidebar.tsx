@@ -12,6 +12,7 @@ import {
   MessageSquare,
   FileText,
   LogOut,
+  Clock,
 } from "lucide-react";
 
 const sections = [
@@ -19,6 +20,7 @@ const sections = [
     title: "Main Sections",
     items: [
       { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+      { label: "Time Slots", href: "/admin/time-slots", icon: Clock  },
       { label: "Bookings", href: "/admin/bookings", icon: CalendarCheck },
       { label: "Customers", href: "/admin/users", icon: Users },
       { label: "Workers", href: "/admin/workers", icon: Wrench },
