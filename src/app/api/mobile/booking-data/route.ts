@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebaseClient";
 
 const masterRef = collection(db, "masterSlots");
@@ -16,10 +16,16 @@ export async function GET() {
 
   // Fetch master slots (active only)
   const masterSnap = await getDocs(masterRef);
+  interface MasterSlot {
+    id: string;
+    time: string;
+    active: boolean;
+    [key: string]: unknown;
+  }
   const masterSlots = masterSnap.docs
-    .map((d) => ({ id: d.id, ...d.data() }))
-    .filter((s: any) => s.active)
-    .sort((a: any, b: any) => a.time.localeCompare(b.time));
+    .map((d) => ({ id: d.id, ...(d.data() as Omit<MasterSlot, "id">) }) as MasterSlot)
+    .filter((s) => s.active)
+    .sort((a, b) => a.time.localeCompare(b.time));
 
   // Fetch blocked days only for next 5
   const blockedSnap = await getDocs(blockedRef);
@@ -28,7 +34,7 @@ export async function GET() {
     .filter((date: string) => next5.includes(date));
 
   // Fetch already booked slots for next 5
-  const bookedSlots: any = {};
+  const bookedSlots: Record<string, string[]> = {};
 
   const bookingsSnap = await getDocs(bookingsRef);
   bookingsSnap.forEach((d) => {
