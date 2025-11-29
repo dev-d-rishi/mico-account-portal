@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
-import { collection, addDoc, getDocs, query, where, orderBy } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+} from "firebase/firestore";
 import { db } from "@/lib/firebaseClient";
 
 export async function POST(req: Request) {
@@ -67,7 +74,11 @@ export async function POST(req: Request) {
   } catch (error: unknown) {
     console.error("BOOK SERVICE POST ERROR:", error);
     return NextResponse.json(
-      { success: false, message: error instanceof Error ? error.message : "Internal server error" },
+      {
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Internal server error",
+      },
       { status: 500 }
     );
   }
@@ -77,7 +88,6 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
-    const date = searchParams.get("date");
 
     if (!userId) {
       return NextResponse.json(
@@ -87,27 +97,18 @@ export async function GET(req: Request) {
     }
 
     const bookingsRef = collection(db, "bookings");
-    let q;
 
-    if (date) {
-      q = query(
-        bookingsRef,
-        where("userId", "==", userId),
-        where("date", "==", date),
-        orderBy("createdAt", "desc")
-      );
-    } else {
-      q = query(
-        bookingsRef,
-        where("userId", "==", userId),
-        orderBy("createdAt", "desc")
-      );
-    }
+    // NO orderBy → NO Firestore index required
+    const q = query(
+      bookingsRef,
+      where("userId", "==", userId)
+    );
 
     interface BookingData {
       id: string;
       [key: string]: unknown;
     }
+
     const results: BookingData[] = [];
     const snapshot = await getDocs(q);
 
@@ -118,6 +119,13 @@ export async function GET(req: Request) {
       })
     );
 
+    // Sort manually instead of Firestore (no index needed)
+    results.sort((a, b) => {
+      const t1 = new Date(a.createdAt as string).getTime();
+      const t2 = new Date(b.createdAt as string).getTime();
+      return t2 - t1; // newest first
+    });
+
     return NextResponse.json({
       success: true,
       bookings: results,
@@ -125,7 +133,11 @@ export async function GET(req: Request) {
   } catch (error: unknown) {
     console.error("BOOK SERVICE GET ERROR:", error);
     return NextResponse.json(
-      { success: false, message: error instanceof Error ? error.message : "Internal server error" },
+      {
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Internal server error",
+      },
       { status: 500 }
     );
   }
