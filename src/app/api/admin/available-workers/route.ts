@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebaseClient";
 
 export async function POST(req: Request) {
@@ -18,7 +18,8 @@ export async function POST(req: Request) {
     const workersRef = collection(db, "workers");
     const snapshot = await getDocs(workersRef);
 
-    const workers: any[] = [];
+    type Worker = { id: string; [key: string]: unknown };
+    const workers: Worker[] = [];
     snapshot.forEach((doc) =>
       workers.push({ id: doc.id, ...doc.data() })
     );

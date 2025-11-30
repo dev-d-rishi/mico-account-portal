@@ -67,6 +67,58 @@ export async function GET() {
       engagementDurationOverTime,
       latestRelease,
     });
+
+    // --- Firestore: Scan Counter Analytics ---
+    interface ScanEvent {
+      date: string;
+      count: number;
+    }
+
+    const overviewRef = collection(db, "analytics");
+    const overviewSnap = await getDocs(overviewRef);
+
+    let scanAnalytics = {
+      totalCount: 0,
+      analyticsEvents: [],
+      todayCount: 0,
+      yesterdayCount: 0,
+      last7Days: [],
+      last30Days: [],
+    };
+
+    const overviewDoc = overviewSnap.docs.find((d) => d.id === "overview");
+
+    if (overviewDoc) {
+      const data = overviewDoc.data() || {};
+      const events = data.analyticsEvents || [];
+      const totalCount = data.totalCount || 0;
+
+      events.sort((a: ScanEvent, b: ScanEvent) => a.date.localeCompare(b.date));
+
+      const todayStr = new Date().toISOString().split("T")[0];
+      const yesterdayStr = new Date(Date.now() - 86400000)
+        .toISOString()
+        .split("T")[0];
+
+      const todayRecord = events.find((d: ScanEvent) => d.date === todayStr);
+      const yesterdayRecord = events.find((d: ScanEvent) => d.date === yesterdayStr);
+
+      const last7DaysDate = new Date();
+      last7DaysDate.setDate(last7DaysDate.getDate() - 7);
+
+      const last30DaysDate = new Date();
+      last30DaysDate.setDate(last30DaysDate.getDate() - 30);
+
+      scanAnalytics = {
+        totalCount,
+        analyticsEvents: events,
+        todayCount: todayRecord?.count || 0,
+        yesterdayCount: yesterdayRecord?.count || 0,
+        last7Days: events.filter((d: ScanEvent) => new Date(d.date) >= last7DaysDate),
+        last30Days: events.filter((d: ScanEvent) => new Date(d.date) >= last30DaysDate),
+      };
+    }
+
     return NextResponse.json({
       totalUsers,
       activeUsers,
@@ -76,6 +128,7 @@ export async function GET() {
       userActivityOverTime,
       engagementDurationOverTime,
       latestRelease,
+      scanAnalytics,
     });
   } catch (error: unknown) {
     console.error("🔥 GA4 Analytics Route Error:");

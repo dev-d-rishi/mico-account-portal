@@ -29,7 +29,13 @@ export default function AdminBookingsPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [workers, setWorkers] = useState<any[]>([]);
+  type Worker = {
+    id: string;
+    name: string;
+    phone: string;
+  };
+
+  const [workers, setWorkers] = useState<Worker[]>([]);
   const [showWorkerModal, setShowWorkerModal] = useState(false);
 
   const fetchBookings = useCallback(async () => {
@@ -84,7 +90,7 @@ export default function AdminBookingsPage() {
 
   useEffect(() => {
     fetchBookings();
-  }, [statusFilter, dateFilter]);
+  }, [statusFilter, dateFilter, fetchBookings]);
 
   return (
     <div className="p-6 text-black">

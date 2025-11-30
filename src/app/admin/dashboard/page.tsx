@@ -23,14 +23,15 @@ ChartJS.register(
   Legend
 );
 
-interface ChartDataPointUsers {
+interface ScanAnalyticsEvent {
   date: string;
-  users: number;
+  count: number;
 }
 
-interface ChartDataPointDuration {
+interface ChartDataPoint {
   date: string;
-  duration: number;
+  users?: number;
+  duration?: number;
 }
 
 interface LatestRelease {
@@ -39,33 +40,35 @@ interface LatestRelease {
 }
 
 interface DashboardData {
-  activeUsers: number;
-  newUsers: number;
-  avgEngagementDuration: number;
-  screenPageViews: number;
-  totalUsers: number;
-  userActivityOverTime: ChartDataPointUsers[];
-  engagementDurationOverTime: ChartDataPointDuration[];
+  activeUsers?: number;
+  newUsers?: number;
+  avgEngagementDuration?: number;
+  screenPageViews?: number;
+  totalUsers?: number;
   latestRelease?: LatestRelease;
+  userActivityOverTime: ChartDataPoint[];
+  engagementDurationOverTime: ChartDataPoint[];
+  scanAnalytics?: {
+    totalCount: number;
+    analyticsEvents: ScanAnalyticsEvent[];
+    todayCount: number;
+    yesterdayCount: number;
+    last7Days: ScanAnalyticsEvent[];
+    last30Days: ScanAnalyticsEvent[];
+  };
 }
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData>({
-    activeUsers: 0,
-    newUsers: 0,
-    avgEngagementDuration: 0,
-    screenPageViews: 0,
-    totalUsers: 0,
     userActivityOverTime: [],
     engagementDurationOverTime: [],
-    latestRelease: undefined,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       const res = await fetch("/api/admin/stats");
-      const result: DashboardData = await res.json();
+      const result = await res.json();
       setData(result);
       setLoading(false);
     }
@@ -76,17 +79,11 @@ export default function DashboardPage() {
     return <div className="p-6 text-gray-600">Loading dashboard...</div>;
 
   const userActivityChartData = {
-    labels: (data?.userActivityOverTime ?? []).map((d: ChartDataPointUsers) =>
-      d.date.length === 8
-        ? `${d.date.slice(6, 8)}/${d.date.slice(4, 6)}/${d.date.slice(0, 4)}`
-        : d.date
-    ),
+    labels: (data?.userActivityOverTime ?? []).map((d: ChartDataPoint): string => d.date),
     datasets: [
       {
         label: "Active Users",
-        data: (data?.userActivityOverTime ?? []).map(
-          (d: ChartDataPointUsers) => d.users
-        ),
+        data: (data?.userActivityOverTime ?? []).map((d: ChartDataPoint): number => d.users ?? 0),
         borderColor: "#FC7000",
         backgroundColor: "rgba(252,112,0,0.2)",
         fill: true,
@@ -96,17 +93,11 @@ export default function DashboardPage() {
   };
 
   const engagementDurationChartData = {
-    labels: (data?.engagementDurationOverTime ?? []).map((d) =>
-      d.date.length === 8
-        ? `${d.date.slice(6, 8)}/${d.date.slice(4, 6)}/${d.date.slice(0, 4)}`
-        : d.date
-    ),
+    labels: (data?.engagementDurationOverTime ?? []).map((d: ChartDataPoint) => d.date),
     datasets: [
       {
         label: "Avg Engagement Duration (mins)",
-        data: (data?.engagementDurationOverTime ?? []).map(
-          (d: ChartDataPointDuration) => d.duration
-        ),
+        data: (data?.engagementDurationOverTime ?? []).map((d: ChartDataPoint) => d.duration ?? 0),
         borderColor: "#3B82F6",
         backgroundColor: "rgba(59,130,246,0.2)",
         fill: true,
@@ -182,6 +173,53 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      <div className="bg-white shadow rounded-lg p-6 mt-6">
+        <h3 className="text-lg font-semibold mb-4 text-gray-700">
+          Scan Analytics (Daily Scans)
+        </h3>
+        <div className="flex flex-wrap gap-6 mb-4">
+          <div className="bg-gray-50 rounded-lg px-4 py-3 shadow-sm text-center">
+            <p className="text-xs text-gray-500">Total Scans</p>
+            <p className="text-xl font-bold text-[#F97316]">
+              {data?.scanAnalytics?.totalCount ?? 0}
+            </p>
+          </div>
+
+          <div className="bg-gray-50 rounded-lg px-4 py-3 shadow-sm text-center">
+            <p className="text-xs text-gray-500">Today</p>
+            <p className="text-xl font-bold text-green-600">
+              {data?.scanAnalytics?.todayCount ?? 0}
+            </p>
+          </div>
+
+          <div className="bg-gray-50 rounded-lg px-4 py-3 shadow-sm text-center">
+            <p className="text-xs text-gray-500">Yesterday</p>
+            <p className="text-xl font-bold text-blue-600">
+              {data?.scanAnalytics?.yesterdayCount ?? 0}
+            </p>
+          </div>
+        </div>
+        {(data?.scanAnalytics?.analyticsEvents?.length ?? 0) > 0 ? (
+          <Line
+            data={{
+              labels: data?.scanAnalytics?.analyticsEvents?.map((d: ScanAnalyticsEvent) => d.date) ?? [],
+              datasets: [
+                {
+                  label: "Scans",
+                  data: data?.scanAnalytics?.analyticsEvents?.map((d: ScanAnalyticsEvent) => d.count) ?? [],
+                  borderColor: "#F97316",
+                  backgroundColor: "rgba(249,115,22,0.2)",
+                  fill: true,
+                  tension: 0.3,
+                },
+              ],
+            }}
+          />
+        ) : (
+          <p className="text-center text-gray-500">No scan analytics available</p>
+        )}
+      </div>
+
       <div className="bg-white shadow rounded-lg p-5 text-center">
         <h2 className="text-sm text-gray-500">Latest App Release</h2>
         <p className="text-md font-semibold text-gray-800">
@@ -189,14 +227,7 @@ export default function DashboardPage() {
         </p>
         <p className="text-xs text-gray-500">
           {data?.latestRelease?.createdAt
-            ? new Date(data.latestRelease.createdAt).toLocaleString("en-GB", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              })
+            ? new Date(data.latestRelease.createdAt).toLocaleDateString()
             : ""}
         </p>
       </div>
