@@ -80,10 +80,10 @@ export async function GET(req: Request) {
     console.log("Tomorrow's timestamp (local):", yesterday.toISOString(), tomorrow.toISOString());
     console.log("Tracked app link click for device:", device);
     // 3. Redirect based on device
-    let redirectUrl = "https://apps.apple.com/in/app/mico/id6754202822"; // default iOS store
-
-    if (device === "Android") {
-      redirectUrl = "https://play.google.com/store/apps/details?id=com.mico.carwash";
+    let redirectUrl = "https://play.google.com/store/apps/details?id=com.mico.carwash";
+    
+    if (device === "iPhone" || device === "iPad" || device === "iPod" || device === "iOS") {
+      redirectUrl = "https://apps.apple.com/in/app/mico/id6754202822"; // default iOS store
     }
 
     return NextResponse.redirect(redirectUrl);
