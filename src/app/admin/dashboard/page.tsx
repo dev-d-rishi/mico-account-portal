@@ -78,8 +78,25 @@ export default function DashboardPage() {
   if (loading)
     return <div className="p-6 text-gray-600">Loading dashboard...</div>;
 
+  function formatDate(dateString: string) {
+    if (/^\d{8}$/.test(dateString)) {
+      const year = dateString.substring(0, 4);
+      const month = dateString.substring(4, 6);
+      const day = dateString.substring(6, 8);
+      return `${day}/${month}/${year}`;
+    }
+
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
   const userActivityChartData = {
-    labels: (data?.userActivityOverTime ?? []).map((d: ChartDataPoint): string => d.date),
+    labels: (data?.userActivityOverTime ?? []).map((d: ChartDataPoint): string => formatDate(d.date)),
     datasets: [
       {
         label: "Active Users",
@@ -93,7 +110,7 @@ export default function DashboardPage() {
   };
 
   const engagementDurationChartData = {
-    labels: (data?.engagementDurationOverTime ?? []).map((d: ChartDataPoint) => d.date),
+    labels: (data?.engagementDurationOverTime ?? []).map((d: ChartDataPoint) => formatDate(d.date)),
     datasets: [
       {
         label: "Avg Engagement Duration (mins)",
@@ -202,7 +219,7 @@ export default function DashboardPage() {
         {(data?.scanAnalytics?.analyticsEvents?.length ?? 0) > 0 ? (
           <Line
             data={{
-              labels: data?.scanAnalytics?.analyticsEvents?.map((d: ScanAnalyticsEvent) => d.date) ?? [],
+              labels: data?.scanAnalytics?.analyticsEvents?.map((d: ScanAnalyticsEvent) => formatDate(d.date)) ?? [],
               datasets: [
                 {
                   label: "Scans",
@@ -227,7 +244,7 @@ export default function DashboardPage() {
         </p>
         <p className="text-xs text-gray-500">
           {data?.latestRelease?.createdAt
-            ? new Date(data.latestRelease.createdAt).toLocaleDateString()
+            ? formatDate(data.latestRelease.createdAt)
             : ""}
         </p>
       </div>
