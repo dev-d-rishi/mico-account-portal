@@ -5,7 +5,7 @@ import { db } from "@/lib/firebaseClient";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { bookingId } = body;
+    const { bookingId, workerName, workerId } = body;
 
     if (!bookingId) {
       return NextResponse.json(
@@ -18,8 +18,8 @@ export async function POST(req: Request) {
 
     // TEMP FIX: static worker until worker system is created
     const workerAssignment = {
-      workerId: "worker_001",
-      workerName: "Default Worker",
+      workerId,
+      workerName
     };
 
     await updateDoc(ref, {

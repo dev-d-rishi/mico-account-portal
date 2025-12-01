@@ -4,14 +4,14 @@ import { db } from "@/lib/firebaseClient";
 
 export async function POST(req: Request) {
   try {
-    const { date, time } = await req.json();
+    // const { date, time } = await req.json();
 
-    if (!date || !time) {
-      return NextResponse.json(
-        { success: false, workers: [], message: "Missing date or time" },
-        { status: 400 }
-      );
-    }
+    // if (!date || !time) {
+    //   return NextResponse.json(
+    //     { success: false, workers: [], message: "Missing date or time" },
+    //     { status: 400 }
+    //   );
+    // }
 
     // TODO: replace with real logic later
     // For now return all workers from "workers" collection
