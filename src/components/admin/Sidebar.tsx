@@ -13,6 +13,7 @@ import {
   FileText,
   LogOut,
   Clock,
+  Settings,
 } from "lucide-react";
 
 const sections = [
@@ -24,7 +25,7 @@ const sections = [
       { label: "Bookings", href: "/admin/bookings", icon: CalendarCheck },
       { label: "Customers", href: "/admin/users", icon: Users },
       { label: "Workers", href: "/admin/workers", icon: Wrench },
-      // { label: "Services", href: "/admin/services", icon: Settings },
+      { label: "Services", href: "/admin/services", icon: Settings },
       { label: "Revenue", href: "/admin/revenue", icon: DollarSign },
       { label: "Feedback", href: "/admin/feedback", icon: MessageSquare },
     ],

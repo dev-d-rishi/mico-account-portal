@@ -1,5 +1,13 @@
 "use client";
 
+import {
+  Check,
+  CheckCheckIcon,
+  CheckCircle,
+  CheckSquare,
+  Edit,
+  Pencil,
+} from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 
 type Booking = {
@@ -95,9 +103,29 @@ export default function AdminBookingsPage() {
     }
   };
 
+  const formatTimeForInput = (timeString: string) => {
+    if (!timeString) return "";
+
+    const [time, modifier] = timeString.split(" "); // "10:00", "AM"
+    const [hoursStr, minutes] = time.split(":");
+
+    let hours = parseInt(hoursStr, 10);
+
+    if (modifier === "PM" && hours < 12) {
+      hours += 12;
+    }
+    if (modifier === "AM" && hours === 12) {
+      hours = 0;
+    }
+
+    const hh = String(hours).padStart(2, "0");
+    return `${hh}:${minutes}`;
+  };
+
   useEffect(() => {
     fetchBookings();
   }, [statusFilter, dateFilter, fetchBookings]);
+
   useEffect(() => {
     fetchAvailableWorkers();
   }, []);
@@ -163,9 +191,6 @@ export default function AdminBookingsPage() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                 Action
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Edit
-              </th>
             </tr>
           </thead>
 
@@ -211,25 +236,45 @@ export default function AdminBookingsPage() {
                   <td className="p-3">{b.time}</td>
 
                   <td className="p-3">
-                    <span
-                      className={`px-3 py-1 rounded text-white 
-                        ${
-                          b.status === "pending"
-                            ? "bg-yellow-500"
-                            : b.status === "confirmed"
-                            ? "bg-green-600"
-                            : b.status === "cancelled"
-                            ? "bg-red-600"
-                            : b.status === "completed"
-                            ? "bg-blue-600"
-                            : "bg-gray-500"
-                        }`}
-                    >
-                      {b.status}
-                    </span>
+                    {(() => {
+                      // Convert booking date & time into a real Date object
+                      const slotDateTime = new Date(`${b.date} ${b.time}`);
+                      const now = new Date();
+
+                      const isPassed =
+                        slotDateTime < now &&
+                        !["completed", "cancelled"].includes(b.status);
+
+                      if (isPassed) {
+                        return (
+                          <span className="px-3 py-1 rounded text-white bg-red-600">
+                            passed
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <span
+                          className={`px-3 py-1 rounded text-white 
+                            ${
+                              b.status === "pending"
+                                ? "bg-yellow-500"
+                                : b.status === "confirmed"
+                                ? "bg-green-600"
+                                : b.status === "cancelled"
+                                ? "bg-red-600"
+                                : b.status === "completed"
+                                ? "bg-orange-500"
+                                : "bg-gray-500"
+                            }`}
+                        >
+                          {b.status}
+                        </span>
+                      );
+                    })()}
                   </td>
 
-                  <td className="p-3">
+                  {/* <td className="p-3">
                     {b.assignedTo?.workerId ? (
                       <button
                         onClick={() => {
@@ -249,16 +294,39 @@ export default function AdminBookingsPage() {
                         Assign Worker
                       </button>
                     )}
-                  </td>
+                  </td> */}
                   <td className="p-3">
+                    {b.status !== "completed" && (
+                      <button
+                        onClick={() => {
+                          setSelectedBooking(b);
+                          setShowBookingModal(true);
+                        }}
+                        className="text-[#ff8000] text-lg"
+                      >
+                        <Edit size={28} />
+                      </button>
+                    )}
                     <button
-                      onClick={() => {
-                        setSelectedBooking(b);
-                        setShowBookingModal(true);
+                      onClick={async () => {
+                        const confirmUpdate = window.confirm(
+                          "Are you sure you want to mark this booking as completed?"
+                        );
+                        if (!confirmUpdate) return;
+
+                        await fetch("/api/admin/update-status", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            bookingId: b.id,
+                            status: "completed",
+                          }),
+                        });
+                        fetchBookings();
                       }}
-                      className="text-blue-600 text-lg"
+                      className="text-[#06ac00] text-lg ml-4 cursor-pointer"
                     >
-                      ✏️
+                      <CheckSquare size={28} />
                     </button>
                   </td>
                 </tr>
@@ -399,9 +467,9 @@ export default function AdminBookingsPage() {
               />
 
               <input
-                type="text"
+                type="time"
                 className="border p-2 rounded w-full mt-2"
-                defaultValue={selectedBooking.time}
+                defaultValue={formatTimeForInput(selectedBooking.time)}
                 onChange={(e) =>
                   setSelectedBooking({
                     ...selectedBooking,
