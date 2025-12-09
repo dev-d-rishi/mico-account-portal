@@ -3,11 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { db } from "@/lib/firebaseClient";
 import {
-  collection,
   doc,
   deleteDoc,
-  getDocs,
-  setDoc,
 } from "firebase/firestore";
 import { Edit, Trash } from "lucide-react";
 
@@ -62,13 +59,11 @@ export default function ServicesAdminPage() {
   }, []);
 
   const fetchServices = async () => {
-    const snapshot = await getDocs(collection(db, "services"));
-    const list = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Service[];
+    const services = await fetch("/api/admin/services").then((res) => res.json()).then(data => data.services);
+    
+    if(!Array.isArray(services)) return;
 
-    setServices(list);
+    setServices(services);
   };
 
   const handleSave = async () => {
@@ -139,8 +134,22 @@ export default function ServicesAdminPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this service?")) return;
+    const res = await fetch("/api/admin/services", {
+      method: "DELETE",
+      body: JSON.stringify({ id }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-    await deleteDoc(doc(db, "services", id));
+    const data = await res.json();
+
+    if (!data.success) {
+      alert("Failed to delete service.");
+      return;
+    }
+
+    alert("Service deleted successfully!");
     fetchServices();
   };
 

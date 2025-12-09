@@ -18,7 +18,7 @@ async function uploadToS3(file: File, serviceId: string) {
 
   const params = {
     Bucket: process.env.AWS_S3_BUCKET!,
-    Key: `services/${serviceId}.jpg`,
+    Key: `services/${serviceId}.png`,
     Body: buffer,
     ACL: "public-read",
     ContentType: file.type,
