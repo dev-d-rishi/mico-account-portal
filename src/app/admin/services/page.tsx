@@ -22,11 +22,18 @@ type Service = {
     Premium: { price: string; time: string };
     bike: { price: string; time: string};
   };
+  allowed_addons: string[];
+};
+
+type Addon = {
+  id: string;
+  name: string;
 };
 
 export default function ServicesAdminPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [editing, setEditing] = useState<Service | null>(null);
+  const [addons, setAddons] = useState<Addon[]>([]);
 
   const availableItems = [
     "Hand Wash",
@@ -56,6 +63,7 @@ export default function ServicesAdminPage() {
 
   useEffect(() => {
     fetchServices();
+    fetchAddons();
   }, []);
 
   const fetchServices = async () => {
@@ -64,6 +72,14 @@ export default function ServicesAdminPage() {
     if(!Array.isArray(services)) return;
 
     setServices(services);
+  };
+
+  const fetchAddons = async () => {
+    const res = await fetch('/api/admin/addons');
+    const data = await res.json();
+    if (Array.isArray(data.addons)) {
+      setAddons(data.addons);
+    }
   };
 
   const handleSave = async () => {
@@ -100,12 +116,20 @@ export default function ServicesAdminPage() {
       return;
     }
 
+    if (!editing.allowed_addons) {
+      editing.allowed_addons = [];
+    }
+
     const form = new FormData();
     form.append("id", editing.id);
     form.append("service_name", editing.service_name);
     form.append("description", editing.description);
     form.append("car_pricing", JSON.stringify(editing.car_pricing));
     form.append("services", JSON.stringify(editing.services));
+    form.append(
+      "allowed_addons",
+      JSON.stringify(editing.allowed_addons)
+    );
 
     // If image_url is Blob URL → send file
     const imageInput = document.querySelector("#service-image-input") as HTMLInputElement;
@@ -164,6 +188,21 @@ export default function ServicesAdminPage() {
     setEditing({ ...editing, services: newList });
   };
 
+  const toggleAddon = (addonId: string) => {
+    if (!editing) return;
+
+    const current = Array.isArray(editing.allowed_addons)
+      ? editing.allowed_addons
+      : [];
+
+    const exists = current.includes(addonId);
+    const updated = exists
+      ? current.filter(id => id !== addonId)
+      : [...current, addonId];
+
+    setEditing({ ...editing, allowed_addons: updated });
+  };
+
   return (
     <div className="p-6 text-black">
       <h1 className="text-3xl font-bold text-[#FC7000] mb-6">
@@ -187,6 +226,7 @@ export default function ServicesAdminPage() {
               Premium: { price: "", time: "" },
               bike: { price: "", time: "" },
             },
+            allowed_addons: [],
           })
         }
       >
@@ -216,19 +256,24 @@ export default function ServicesAdminPage() {
           {services.map((s) => (
             <tr key={s.id} className="hover:bg-gray-50 border-t">
               <td className="p-3 font-semibold">{s.service_name}</td>
-              {/* <td className="p-3">
+              <td className="p-3">
                 <img
                   src={s.image_url}
                   className="h-16 w-28 object-cover rounded shadow"
                 />
-              </td> */}
+              </td>
               <td className="p-3 text-gray-600 text-sm">
                 {s.description.substring(0, 80)}...
               </td>
               <td className="p-3">
                 <button
                   className="text-blue-600 hover:text-blue-800 mr-3"
-                  onClick={() => setEditing(s)}
+                  onClick={() =>
+                    setEditing({
+                      ...s,
+                      allowed_addons: Array.isArray(s.allowed_addons) ? s.allowed_addons : [],
+                    })
+                  }
                   title="Edit"
                 >
                   <Edit />
@@ -410,6 +455,33 @@ export default function ServicesAdminPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* ADDONS */}
+              <div>
+                <h3 className="text-xl font-bold text-[#FC7000] mb-3">
+                  Select Available Addons
+                </h3>
+
+                {addons.length === 0 ? (
+                  <p className="text-gray-500">No addons created yet</p>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {addons.map(addon => (
+                      <div
+                        key={addon.id}
+                        className={`p-2 border rounded cursor-pointer ${
+                          editing?.allowed_addons?.includes(addon.id)
+                            ? 'bg-blue-200 border-blue-600'
+                            : 'bg-gray-100'
+                        }`}
+                        onClick={() => toggleAddon(addon.id)}
+                      >
+                        {addon.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

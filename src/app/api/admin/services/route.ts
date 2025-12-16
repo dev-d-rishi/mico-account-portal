@@ -32,7 +32,16 @@ async function uploadToS3(file: File, serviceId: string) {
 export async function GET() {
   try {
     const snapshot = await getDocs(collection(db, "services"));
-    const list = snapshot.docs.map((docu) => ({ id: docu.id, ...docu.data() }));
+    const list = snapshot.docs.map(docu => {
+      const data = docu.data();
+      return {
+        id: docu.id,
+        ...data,
+        allowed_addons: Array.isArray(data.allowed_addons)
+          ? data.allowed_addons
+          : [],
+      };
+    });
     return NextResponse.json({ services: list });
   } catch (error) {
     console.error("Error fetching services:", error);
@@ -51,6 +60,11 @@ export async function POST(req: Request) {
 
     const pricingJSON = form.get("car_pricing") as string;
     const servicesJSON = form.get("services") as string;
+
+    const allowedAddonsJSON = form.get("allowed_addons") as string | null;
+    const allowed_addons = allowedAddonsJSON
+      ? JSON.parse(allowedAddonsJSON)
+      : [];
 
     const car_pricing = JSON.parse(pricingJSON);
     const services = JSON.parse(servicesJSON);
@@ -71,6 +85,7 @@ export async function POST(req: Request) {
       car_pricing,
       services,
       image_url,
+      allowed_addons,
     });
 
     return NextResponse.json({ success: true });

@@ -26,6 +26,7 @@ const sections = [
       { label: "Customers", href: "/admin/users", icon: Users },
       { label: "Workers", href: "/admin/workers", icon: Wrench },
       { label: "Services", href: "/admin/services", icon: Settings },
+      { label: "Add-ons", href: "/admin/addons", icon: Settings },
       { label: "Revenue", href: "/admin/revenue", icon: DollarSign },
       { label: "Feedback", href: "/admin/feedback", icon: MessageSquare },
     ],
