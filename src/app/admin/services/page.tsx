@@ -1,11 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { db } from "@/lib/firebaseClient";
-import {
-  doc,
-  deleteDoc,
-} from "firebase/firestore";
+import Image from "next/image";
 import { Edit, Trash } from "lucide-react";
 
 type Service = {
@@ -257,9 +253,12 @@ export default function ServicesAdminPage() {
             <tr key={s.id} className="hover:bg-gray-50 border-t">
               <td className="p-3 font-semibold">{s.service_name}</td>
               <td className="p-3">
-                <img
+                <Image
                   src={s.image_url}
-                  className="h-16 w-28 object-cover rounded shadow"
+                  alt={s.service_name}
+                  width={112}
+                  height={64}
+                  className="object-cover rounded shadow"
                 />
               </td>
               <td className="p-3 text-gray-600 text-sm">
@@ -318,9 +317,11 @@ export default function ServicesAdminPage() {
 
               {editing.image_url ? (
                 <>
-                  <img
+                  <Image
                     src={editing.image_url}
-                    className="w-full h-full object-cover"
+                    alt={editing.service_name || "Service image"}
+                    fill
+                    className="object-cover"
                   />
 
                   <button

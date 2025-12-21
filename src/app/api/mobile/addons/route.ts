@@ -59,7 +59,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ addons });
   } catch (error) {
-    console.error('Mobile addons fetch error:', error);
+    console.log('Mobile addons fetch error:', error);
     return NextResponse.json(
       { error: 'Failed to load addons' },
       { status: 500 }

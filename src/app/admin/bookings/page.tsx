@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Check,
-  CheckCheckIcon,
-  CheckCircle,
-  CheckSquare,
-  Edit,
-  Pencil,
-} from "lucide-react";
+import { CheckSquare, Edit } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 
 type Booking = {
@@ -35,6 +28,17 @@ type Booking = {
   date: string;
   time: string;
   status: string;
+  addOns?: {
+    id?: string;
+    name?: string;
+    price?: number;
+  }[] | string[];
+  payment?: {
+    method?: string;
+    status?: string;
+    paymentId?: string | null;
+  };
+  totalPrice?: number;
 };
 
 export default function AdminBookingsPage() {
@@ -337,8 +341,14 @@ export default function AdminBookingsPage() {
       </div>
 
       {showBookingModal && selectedBooking && (
-        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-[450px] max-h-[85vh] overflow-y-auto">
+        <div
+          className="fixed inset-0 bg-black/40 flex justify-center items-center"
+          onClick={() => setShowBookingModal(false)}
+        >
+          <div
+            className="bg-white p-6 rounded-lg shadow-xl w-[450px] max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h2 className="text-2xl font-bold mb-4">Booking Details</h2>
 
             <div className="space-y-3 text-gray-800">
@@ -355,6 +365,39 @@ export default function AdminBookingsPage() {
                 <strong>Service:</strong>{" "}
                 {selectedBooking.service?.service_name}
               </p>
+              {Array.isArray(selectedBooking.addOns) &&
+                selectedBooking.addOns.length > 0 && (
+                  <div>
+                    <strong>Add-ons:</strong>
+                    <ul className="list-disc ml-6 mt-1 text-gray-700">
+                      {selectedBooking.addOns.map(
+                        (
+                          addon:
+                            | string
+                            | {
+                                name?: string;
+                                price?: number;
+                              },
+                          idx: number
+                        ) => (
+                          <li key={idx}>
+                            {typeof addon === "string"
+                              ? addon
+                              : `${addon.name ?? "Add-on"}${
+                                  addon.price ? ` (₹${addon.price})` : ""
+                                }`}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )}
+              {(!selectedBooking.addOns ||
+                selectedBooking.addOns.length === 0) && (
+                <p>
+                  <strong>Add-ons:</strong> None
+                </p>
+              )}
               <p>
                 <strong>Date:</strong> {selectedBooking.date}
               </p>
@@ -364,6 +407,32 @@ export default function AdminBookingsPage() {
               <p>
                 <strong>Status:</strong> {selectedBooking.status}
               </p>
+
+              <hr className="my-4" />
+
+              <h3 className="text-xl font-semibold mb-2">Payment</h3>
+
+              <p>
+                <strong>Method:</strong>{" "}
+                {selectedBooking.payment?.method?.toUpperCase() || "N/A"}
+              </p>
+
+              <p>
+                <strong>Status:</strong>{" "}
+                {selectedBooking.payment?.status === "paid" ? (
+                  <span className="text-green-600 font-semibold">Paid</span>
+                ) : (
+                  <span className="text-red-600 font-semibold">
+                    Pending (Collect After Service)
+                  </span>
+                )}
+              </p>
+
+              {typeof selectedBooking.totalPrice === "number" && (
+                <p>
+                  <strong>Total Amount:</strong> ₹{selectedBooking.totalPrice}
+                </p>
+              )}
               <p>
                 <strong>Address:</strong> {selectedBooking.address?.house},{" "}
                 {selectedBooking.address?.street},{" "}

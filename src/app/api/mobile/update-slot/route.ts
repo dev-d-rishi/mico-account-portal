@@ -1,10 +1,10 @@
 import { db } from "@/lib/firebaseClient";
 import { NextResponse } from "next/server";
-import { doc, updateDoc, getDoc, deleteField } from "firebase/firestore";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
 
 export async function POST(req: Request) {
   try {
-    const { bookingId, date, time, workerId, workerName } = await req.json();
+    const { bookingId, date, time} = await req.json();
 
     if (!bookingId || !date || !time) {
       return NextResponse.json(
@@ -18,12 +18,6 @@ export async function POST(req: Request) {
     await updateDoc(ref, {
       date,
       time,
-      assignedTo: workerId
-        ? {
-            workerId,
-            workerName,
-          }
-        : deleteField(),
       updatedAt: new Date().toISOString(),
     });
 

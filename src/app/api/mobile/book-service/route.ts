@@ -5,6 +5,9 @@ import {
   getDocs,
   query,
   where,
+  doc,
+  getDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebaseClient";
 
@@ -22,7 +25,9 @@ export async function POST(req: Request) {
       date,
       time,
       totalPrice,
+      totalTime,
       payment,
+      addOns,
     } = body;
 
     if (!userId || !vehicle || !address || !service || !date || !time) {
@@ -40,12 +45,12 @@ export async function POST(req: Request) {
       vehicle,
       address,
       service,
-
+      addOns: addOns ?? [],
       date,
       time,
 
       totalPrice: totalPrice ?? 0,
-
+      totalTime: totalTime ?? 0,
       payment: payment ?? {
         method: "UPI",
         status: "pending",
@@ -64,6 +69,29 @@ export async function POST(req: Request) {
     };
 
     const docRef = await addDoc(collection(db, "bookings"), bookingData);
+
+    // 🔑 Mark discount as redeemed in DB (one-time)
+    if (userId) {
+      const userRef = doc(db, "users", userId);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+
+        if (
+          userData?.discounts &&
+          userData.discounts.redeemed === false
+        ) {
+          await updateDoc(userRef, {
+            discounts: {
+              ...userData.discounts,
+              redeemed: true,
+            },
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,
