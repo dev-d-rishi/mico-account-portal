@@ -14,6 +14,7 @@ import {
   LogOut,
   Clock,
   Settings,
+  ReceiptIndianRupee,
 } from "lucide-react";
 
 const sections = [
@@ -28,6 +29,7 @@ const sections = [
       { label: "Services", href: "/admin/services", icon: Settings },
       { label: "Add-ons", href: "/admin/addons", icon: Settings },
       { label: "Revenue", href: "/admin/revenue", icon: DollarSign },
+      { label: "Coupon", href: "/admin/coupon", icon: ReceiptIndianRupee },
       { label: "Feedback", href: "/admin/feedback", icon: MessageSquare },
     ],
   },
