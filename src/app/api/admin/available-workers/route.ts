@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebaseClient";
 
-export async function POST(_req: Request) {
+export async function POST() {
   try {
     // const { date, time } = await req.json();
 

@@ -191,7 +191,7 @@ export default function AdminCouponPage() {
                 onChange={e =>
                   setEditing({
                     ...editing,
-                    type: e.target.value as any,
+                    type: e.target.value as 'percentage' | 'flat',
                   })
                 }
               >
