@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server";
-import { doc, setDoc, getDocs, collection, deleteDoc } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  getDocs,
+  collection,
+  deleteDoc,
+  query,
+  where,
+} from "firebase/firestore";
 import AWS from "aws-sdk";
 import { db } from "@/lib/firebaseClient";
 
@@ -28,24 +36,54 @@ async function uploadToS3(file: File, serviceId: string) {
   return upload.Location; // Public S3 URL
 }
 
-// GET — Fetch all services
+// GET — Fetch all services, with avgRating and totalRatings
 export async function GET() {
   try {
-    const snapshot = await getDocs(collection(db, "services"));
-    const list = snapshot.docs.map(docu => {
-      const data = docu.data();
-      return {
-        id: docu.id,
-        ...data,
-        allowed_addons: Array.isArray(data.allowed_addons)
-          ? data.allowed_addons
-          : [],
-      };
-    });
-    return NextResponse.json({ services: list });
+    const servicesSnap = await getDocs(collection(db, "services"));
+
+    const services = await Promise.all(
+      servicesSnap.docs.map(async serviceDoc => {
+        const serviceData = serviceDoc.data();
+        const serviceId = serviceDoc.id;
+
+        // Fetch ratings for this service
+        const ratingsQuery = query(
+          collection(db, "ratings"),
+          where("serviceId", "==", serviceId)
+        );
+
+        const ratingsSnap = await getDocs(ratingsQuery);
+
+        let avgRating = 0;
+        let totalRatings = ratingsSnap.size;
+
+        if (!ratingsSnap.empty) {
+          const sum = ratingsSnap.docs.reduce((acc, r) => {
+            return acc + (r.data().rating || 0);
+          }, 0);
+
+          avgRating = Number((sum / totalRatings).toFixed(1));
+        }
+
+        return {
+          id: serviceId,
+          ...serviceData,
+          allowed_addons: Array.isArray(serviceData.allowed_addons)
+            ? serviceData.allowed_addons
+            : [],
+          avgRating,
+          totalRatings,
+        };
+      })
+    );
+
+    return NextResponse.json({ services });
   } catch (error) {
-    console.error("Error fetching services:", error);
-    return NextResponse.json({ error: "Failed to load services" }, { status: 500 });
+    console.error("Error fetching services with ratings:", error);
+    return NextResponse.json(
+      { error: "Failed to load services" },
+      { status: 500 }
+    );
   }
 }
 

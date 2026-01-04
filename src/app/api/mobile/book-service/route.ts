@@ -11,6 +11,23 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebaseClient";
 
+const buildServiceDateTime = (date: string, time: string) => {
+  // date: 2025-12-31
+  // time: 5:00 PM
+  const [timePart, meridian] = time.split(" ");
+  let [hours, minutes] = timePart.split(":").map(Number);
+
+  if (meridian === "PM" && hours < 12) hours += 12;
+  if (meridian === "AM" && hours === 12) hours = 0;
+
+  return new Date(
+    `${date}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}:00`
+  );
+};
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -70,6 +87,27 @@ export async function POST(req: Request) {
 
     const docRef = await addDoc(collection(db, "bookings"), bookingData);
 
+    if (userId) {
+      const serviceDateTime = buildServiceDateTime(date, time);
+
+      // ⏰ 1 hour before service
+      const notifyAt = new Date(serviceDateTime.getTime() - 60 * 60 * 1000);
+
+      // Only schedule if time is in future
+      if (notifyAt.getTime() > Date.now()) {
+        await addDoc(collection(db, "users", userId, "notifications"), {
+          type: "BOOKING_REMINDER",
+          title: "Booking Reminder",
+          message: `Your car wash is scheduled at ${time}. Please keep your vehicle ready.`,
+          bookingId: docRef.id,
+
+          scheduledAt: notifyAt.toISOString(),
+          sent: false,
+
+          createdAt: new Date().toISOString(),
+        });
+      }
+    }
     // 🔑 Mark discount as redeemed in DB (one-time)
     if (userId) {
       const userRef = doc(db, "users", userId);
@@ -78,10 +116,7 @@ export async function POST(req: Request) {
       if (userSnap.exists()) {
         const userData = userSnap.data();
 
-        if (
-          userData?.discounts &&
-          userData.discounts.redeemed === false
-        ) {
+        if (userData?.discounts && userData.discounts.redeemed === false) {
           await updateDoc(userRef, {
             discounts: {
               ...userData.discounts,
@@ -126,10 +161,7 @@ export async function GET(req: Request) {
     const bookingsRef = collection(db, "bookings");
 
     // NO orderBy → NO Firestore index required
-    const q = query(
-      bookingsRef,
-      where("userId", "==", userId)
-    );
+    const q = query(bookingsRef, where("userId", "==", userId));
 
     interface BookingData {
       id: string;

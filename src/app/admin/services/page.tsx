@@ -19,6 +19,8 @@ type Service = {
     bike: { price: string; time: string};
   };
   allowed_addons: string[];
+  avgRating?: number;
+  totalRatings?: number;
 };
 
 type Addon = {
@@ -236,11 +238,14 @@ export default function ServicesAdminPage() {
             <th className="px-6 py-3 text-left uppercase text-xs text-gray-700">
               Name
             </th>
-            {/* <th className="px-6 py-3 text-left uppercase text-xs text-gray-700">
+            <th className="px-6 py-3 text-left uppercase text-xs text-gray-700">
               Image
-            </th> */}
+            </th>
             <th className="px-6 py-3 text-left uppercase text-xs text-gray-700">
               Description
+            </th>
+            <th className="px-6 py-3 text-left uppercase text-xs text-gray-700">
+              Rating
             </th>
             <th className="px-6 py-3 text-left uppercase text-xs text-gray-700">
               Actions
@@ -263,6 +268,20 @@ export default function ServicesAdminPage() {
               </td>
               <td className="p-3 text-gray-600 text-sm">
                 {s.description.substring(0, 80)}...
+              </td>
+              <td className="p-3 text-sm">
+                {s.totalRatings && s.totalRatings > 0 ? (
+                  <div className="flex items-center gap-1">
+                    <span className="font-semibold text-yellow-600">
+                      ⭐ {s.avgRating}
+                    </span>
+                    <span className="text-gray-500">
+                      ({s.totalRatings})
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-gray-400">No ratings</span>
+                )}
               </td>
               <td className="p-3">
                 <button
