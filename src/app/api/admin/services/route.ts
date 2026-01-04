@@ -55,7 +55,7 @@ export async function GET() {
         const ratingsSnap = await getDocs(ratingsQuery);
 
         let avgRating = 0;
-        let totalRatings = ratingsSnap.size;
+        const totalRatings = ratingsSnap.size;
 
         if (!ratingsSnap.empty) {
           const sum = ratingsSnap.docs.reduce((acc, r) => {

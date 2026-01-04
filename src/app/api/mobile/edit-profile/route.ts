@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebaseClient";
-import {
-  doc,
-  getDoc,
-  updateDoc,
-  serverTimestamp,
-} from "firebase/firestore";
+import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+
+type EditProfileUpdate = {
+  updatedAt: ReturnType<typeof serverTimestamp>;
+  name?: string;
+  email?: string;
+  alternatePhone?: string;
+  gender?: string;
+};
 
 /**
  * POST /api/mobile/edit-profile
@@ -13,13 +16,7 @@ import {
  */
 export async function POST(req: Request) {
   try {
-    const {
-      phone,
-      name,
-      email,
-      alternatePhone,
-      gender,
-    } = await req.json();
+    const { phone, name, email, alternatePhone, gender } = await req.json();
 
     if (!phone || phone.length !== 10) {
       return NextResponse.json(
@@ -29,7 +26,7 @@ export async function POST(req: Request) {
     }
 
     // Build update object safely (partial updates)
-    const updateData: any = {
+    const updateData: EditProfileUpdate = {
       updatedAt: serverTimestamp(),
     };
 
@@ -49,10 +46,7 @@ export async function POST(req: Request) {
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists()) {
-      return NextResponse.json(
-        { message: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     if (userSnap.data()?.deleted === true) {

@@ -1,18 +1,23 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebaseClient";
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  serverTimestamp,
-  arrayUnion,
-} from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+
+type FcmTokenEntry = {
+  token: string;
+  platform: "android" | "ios";
+};
+
+type UserBasePayload = {
+  name: string;
+  phone: string;
+  whatsAppOptIn: boolean;
+  updatedAt: string;
+};
 
 /**
  * POST /api/mobile/send-otp
  * Creates or updates user document before OTP verification
- * Also stores FCM token if provided
+ * Also stores FCM token if provided (deduped)
  */
 export async function POST(req: Request) {
   try {
@@ -29,15 +34,14 @@ export async function POST(req: Request) {
     const userRef = doc(db, "users", phone);
     const userSnap = await getDoc(userRef);
 
-    const basePayload: any = {
+    const basePayload: UserBasePayload = {
       name,
       phone,
       whatsAppOptIn: Boolean(isWhatsAppUpdateEnabled),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
-    // 🔔 Prepare FCM token payload (if present)
-    const fcmPayload =
+    const fcmPayload: FcmTokenEntry | null =
       fcmToken && platform
         ? {
             token: fcmToken,
@@ -54,24 +58,26 @@ export async function POST(req: Request) {
           redeemed: false,
         },
         ...(fcmPayload && { fcmTokens: [fcmPayload] }),
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       });
     } else {
       // 🔁 Existing user (DEDUPE FCM TOKENS)
-      const existingData = userSnap.data() || {};
-      const existingTokens = Array.isArray(existingData.fcmTokens)
-        ? existingData.fcmTokens
+      const existingData = userSnap.data() as {
+        fcmTokens?: FcmTokenEntry[];
+      } | null;
+
+      const existingTokens: FcmTokenEntry[] = Array.isArray(
+        existingData?.fcmTokens
+      )
+        ? existingData!.fcmTokens!
         : [];
 
       let updatedTokens = existingTokens;
 
       if (fcmPayload) {
-        // ❌ remove duplicates
         updatedTokens = existingTokens.filter(
-          (t: any) => t.token !== fcmPayload.token
+          (t) => t.token !== fcmPayload.token
         );
-
-        // ✅ add latest token
         updatedTokens.push(fcmPayload);
       }
 

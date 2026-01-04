@@ -12,6 +12,13 @@ import {
  * POST /api/mobile/save-fcm-token
  * Saves FCM token inside user document (DEDUPED)
  */
+
+type FcmTokenEntry = {
+  token: string;
+  platform: "android" | "ios";
+  updatedAt?: number;
+};
+
 export async function POST(req: Request) {
   try {
     const { userId, token, platform } = await req.json();
@@ -40,14 +47,11 @@ export async function POST(req: Request) {
       });
     } else {
       const data = userSnap.data() || {};
-      const existingTokens = Array.isArray(data.fcmTokens)
-        ? data.fcmTokens
+      const existingTokens: FcmTokenEntry[] = Array.isArray(data.fcmTokens)
+        ? (data.fcmTokens as FcmTokenEntry[])
         : [];
 
-      // ❌ remove duplicate token
-      const dedupedTokens = existingTokens.filter(
-        (t: any) => t.token !== token
-      );
+      const dedupedTokens = existingTokens.filter((t) => t.token !== token);
 
       // ✅ add latest token
       dedupedTokens.push(tokenPayload);

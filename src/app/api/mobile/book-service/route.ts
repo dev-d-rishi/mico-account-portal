@@ -12,10 +12,11 @@ import {
 import { db } from "@/lib/firebaseClient";
 
 const buildServiceDateTime = (date: string, time: string) => {
-  // date: 2025-12-31
-  // time: 5:00 PM
   const [timePart, meridian] = time.split(" ");
-  let [hours, minutes] = timePart.split(":").map(Number);
+  const [h, m] = timePart.split(":").map(Number);
+
+  let hours = h;
+  const minutes = m;
 
   if (meridian === "PM" && hours < 12) hours += 12;
   if (meridian === "AM" && hours === 12) hours = 0;

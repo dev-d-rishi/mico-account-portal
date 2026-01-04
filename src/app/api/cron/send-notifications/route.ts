@@ -51,7 +51,7 @@ export async function GET() {
 
       const userData = userSnap.data();
       const tokens =
-        userData?.fcmTokens?.map((t: any) => t.token) ?? [];
+        userData?.fcmTokens?.map((t: {token: string, platform: string, updatedAt: number}) => t.token) ?? [];
 
       if (tokens.length === 0) {
         await updateDoc(notifDoc.ref, {
